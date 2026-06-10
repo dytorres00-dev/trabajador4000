@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Coffee, Brain, Volume2, VolumeX } from 'lucide-react';
-import { Task } from '../../types';
+import type { Task } from '../../types';
 
 interface PomodoroTimerProps {
   activeTasks: Task[];

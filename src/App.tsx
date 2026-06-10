@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Layout } from './components/layout/Layout';
 import { KanbanBoard } from './components/kanban/KanbanBoard';
 import { PomodoroTimer } from './components/pomodoro/PomodoroTimer';
 import { IdeasBoard } from './components/ideas/IdeasBoard';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { Task, Idea, Section } from './types';
+import type { Task, Idea, Section } from './types';
 
 export default function App() {
   const [currentSection, setCurrentSection] = useState<Section>('tareas');

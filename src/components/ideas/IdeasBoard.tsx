@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Tag, Edit3, Search, X } from 'lucide-react';
-import { Idea } from '../../types';
+import { Plus, Trash2, Tag, Edit3, X, Lightbulb } from 'lucide-react';
+import type { Idea } from '../../types';
 
 interface IdeaCardProps {
   idea: Idea;
@@ -77,6 +77,7 @@ export const IdeasBoard = ({ ideas, setIdeas }: IdeasBoardProps) => {
       const newIdea: Idea = {
         id: crypto.randomUUID(),
         ...form,
+        color: '#6366f1',
         createdAt: new Date().toISOString(),
       };
       setIdeas([...ideas, newIdea]);

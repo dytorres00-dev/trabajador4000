@@ -5,7 +5,7 @@ import {
   Lightbulb,
   CheckSquare
 } from 'lucide-react';
-import { Section } from '../../types';
+import type { Section } from '../../types';
 
 interface SidebarItemProps {
   icon: React.ElementType;

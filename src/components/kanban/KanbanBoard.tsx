@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import {
   DndContext,
-  ClosestCenter,
+  closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
+  type DragEndEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -16,7 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { X, Plus, Trash2, Calendar } from 'lucide-react';
-import { Task, Priority } from '../../types';
+import type { Task, Priority } from '../../types';
 import { format } from 'date-fns';
 
 interface TaskCardProps {
@@ -96,7 +96,7 @@ export const KanbanBoard = ({ tasks, setTasks }: KanbanBoardProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
-      coordinateGetting: sortableKeyboardCoordinates,
+      coordinateGetter: sortableKeyboardCoordinates,
     })
   );
 
@@ -231,7 +231,7 @@ export const KanbanBoard = ({ tasks, setTasks }: KanbanBoardProps) => {
 
       <DndContext
         sensors={sensors}
-        collisionDetection={ClosestCenter}
+        collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

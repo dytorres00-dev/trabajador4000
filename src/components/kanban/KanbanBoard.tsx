@@ -7,6 +7,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -84,6 +85,29 @@ const TaskCard = ({ task, onDelete }: TaskCardProps) => {
   );
 };
 
+const DroppableColumn = ({ id, label, tasks, children }: { id: string, label: string, tasks: Task[], children: React.ReactNode }) => {
+  const { setNodeRef } = useDroppable({ id });
+
+  return (
+    <div className="flex flex-col h-full min-h-[500px]">
+      <div className="flex items-center justify-between mb-4 px-2">
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold text-slate-300">{label}</h3>
+          <span className="text-xs font-medium bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full border border-slate-700">
+            {tasks.length}
+          </span>
+        </div}
+      </div>
+      <div
+        ref={setNodeRef}
+        className="flex-1 bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-2xl p-3 transition-colors hover:bg-slate-900/80"
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+
 interface KanbanBoardProps {
   tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
@@ -118,12 +142,17 @@ export const KanbanBoard = ({ tasks, setTasks }: KanbanBoardProps) => {
       if (!activeTask) return prev;
 
       const overTask = prev.find((t) => t.id === overId);
+
       if (overTask) {
         return prev.map((t) => (t.id === activeId ? { ...t, status: overTask.status } : t));
       }
 
-      const status = overId as Task['status'];
-      return prev.map((t) => (t.id === activeId ? { ...t, status } : t));
+      const statusMatch = columns.find(c => c.id === overId);
+      if (statusMatch) {
+        return prev.map((t) => (t.id === activeId ? { ...t, status: statusMatch.id } : t));
+      }
+
+      return prev;
     });
   };
 
@@ -153,7 +182,7 @@ export const KanbanBoard = ({ tasks, setTasks }: KanbanBoardProps) => {
         <div>
           <h2 className="text-3xl font-bold text-white mb-2">Gestión de Tareas</h2>
           <p className="text-slate-400">Organiza tu flujo de trabajo con el tablero Kanban.</p>
-        </div>
+        </div}
         <button
           onClick={() => setIsAdding(true)}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20"
@@ -236,34 +265,25 @@ export const KanbanBoard = ({ tasks, setTasks }: KanbanBoardProps) => {
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {columns.map(({ id, label }) => (
-            <div key={id} className="flex flex-col h-full min-h-[500px]">
-              <div className="flex items-center justify-between mb-4 px-2">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-slate-300">{label}</h3>
-                  <span className="text-xs font-medium bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full border border-slate-700">
-                    {tasks.filter((t) => t.status === id).length}
-                  </span>
-                </div>
-              </div>
-
-              <div
-                id={id}
-                className="flex-1 bg-slate-900/50 border-2 border-dashed border-slate-800 rounded-2xl p-3 transition-colors hover:bg-slate-900/80"
-              >
-                <SortableContext items={tasks.filter((t) => t.status === id)} strategy={verticalListSortingStrategy}>
-                  {tasks
-                    .filter((t) => t.status === id)
-                    .map((task) => (
-                      <TaskCard key={task.id} task={task} onDelete={deleteTask} />
-                    ))}
-                  {tasks.filter((t) => t.status === id).length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-32 text-slate-600 italic text-sm opacity-50">
-                      No hay tareas aquí
-                    </div>
-                  )}
-                </SortableContext>
-              </div>
-            </div>
+            <DroppableColumn
+              key={id}
+              id={id}
+              label={label}
+              tasks={tasks.filter(t => t.status === id)}
+            >
+              <SortableContext items={tasks.filter((t) => t.status === id)} strategy={verticalListSortingStrategy}>
+                {tasks
+                  .filter((t) => t.status === id)
+                  .map((task) => (
+                    <TaskCard key={task.id} task={task} onDelete={deleteTask} />
+                  ))}
+                {tasks.filter((t) => t.status === id).length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-32 text-slate-600 italic text-sm opacity-50">
+                    No hay tareas aquí
+                  </div>
+                )}
+              </SortableContext>
+            </DroppableColumn>
           ))}
         </div>
       </DndContext>

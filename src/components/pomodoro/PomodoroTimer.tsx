@@ -22,26 +22,32 @@ export const PomodoroTimer = ({ activeTasks }: PomodoroTimerProps) => {
     long: { label: 'Descanso Largo', time: 15 * 60, color: 'text-blue-500', bg: 'bg-blue-500' },
   };
 
-  const playAlarm = () => {
+  const playSound = (frequency: number, duration: number, ramp: boolean = false) => {
     if (isMuted) return;
     const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
     oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
+    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+
+    if (ramp) {
+      oscillator.frequency.exponentialRampToValueAtTime(frequency * 2, audioCtx.currentTime + duration);
+    }
 
     gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.1);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1);
+    gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.05);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
 
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
 
     oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 1);
+    oscillator.stop(audioCtx.currentTime + duration);
   };
+
+  const playStartSound = () => playSound(523.25, 0.3); // C5 note
+  const playEndAlarm = () => playSound(440, 1, true); // A4 to A5 ramp
 
   useEffect(() => {
     if (isActive && timeLeft > 0) {
@@ -49,7 +55,7 @@ export const PomodoroTimer = ({ activeTasks }: PomodoroTimerProps) => {
         setTimeLeft((prev) => prev - 1);
       }, 1000);
     } else if (timeLeft === 0) {
-      playAlarm();
+      playEndAlarm();
       if (mode === 'work') setSessions((s) => s + 1);
       setIsActive(false);
     }
@@ -59,7 +65,10 @@ export const PomodoroTimer = ({ activeTasks }: PomodoroTimerProps) => {
     };
   }, [isActive, timeLeft, mode]);
 
-  const toggleTimer = () => setIsActive(!isActive);
+  const toggleTimer = () => {
+    if (!isActive) playStartSound();
+    setIsActive(!isActive);
+  };
 
   const resetTimer = () => {
     setIsActive(false);
@@ -90,7 +99,7 @@ export const PomodoroTimer = ({ activeTasks }: PomodoroTimerProps) => {
         <div>
           <h2 className="text-3xl font-bold text-white mb-2">Pomodoro</h2>
           <p className="text-slate-400">Mantén el enfoque y toma descansos regulares.</p>
-        </div>
+        </div}
         <button
           onClick={() => setIsMuted(!isMuted)}
           className={`p-3 rounded-xl border transition-all ${isMuted ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'}`}
@@ -235,12 +244,12 @@ export const PomodoroTimer = ({ activeTasks }: PomodoroTimerProps) => {
               ))}
             </>
           )}
-        </div>
+        </div}
         {selectedTask && (
           <div className="mt-4 p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-indigo-300">Enfoque en: <strong className="text-white">{selectedTask.title}</strong></span>
+              <span className="text-sm font-medium text-indigo-300">Enfoque en: <strong className="text-white">{selectedTask.title}</strong></span
             </div>
           </div>
         )}

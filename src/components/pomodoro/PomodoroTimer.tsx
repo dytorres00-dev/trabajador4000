@@ -99,7 +99,7 @@ export const PomodoroTimer = ({ activeTasks }: PomodoroTimerProps) => {
         <div>
           <h2 className="text-3xl font-bold text-white mb-2">Pomodoro</h2>
           <p className="text-slate-400">Mantén el enfoque y toma descansos regulares.</p>
-        </div}
+        </div>
         <button
           onClick={() => setIsMuted(!isMuted)}
           className={`p-3 rounded-xl border transition-all ${isMuted ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'}`}
@@ -237,7 +237,7 @@ export const PomodoroTimer = ({ activeTasks }: PomodoroTimerProps) => {
                     selectedTaskId === task.id
                       ? 'bg-indigo-600 border-indigo-500 text-white'
                       : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-                  }`}
+                }`}
                 >
                   {task.title}
                 </button>
@@ -249,7 +249,7 @@ export const PomodoroTimer = ({ activeTasks }: PomodoroTimerProps) => {
           <div className="mt-4 p-4 bg-indigo-500/5 border border-indigo-500/20 rounded-xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-indigo-300">Enfoque en: <strong className="text-white">{selectedTask.title}</strong></span
+              <span className="text-sm font-medium text-indigo-300">Enfoque en: <strong className="text-white">{selectedTask.title}</strong></span>
             </div>
           </div>
         )}

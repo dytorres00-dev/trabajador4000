@@ -14,6 +14,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
+  arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { X, Plus, Trash2, Calendar } from 'lucide-react';
@@ -96,7 +97,7 @@ const DroppableColumn = ({ id, label, tasks, children }: { id: string, label: st
           <span className="text-xs font-medium bg-slate-800 text-slate-500 px-2 py-0.5 rounded-full border border-slate-700">
             {tasks.length}
           </span>
-        </div}
+        </div>
       </div>
       <div
         ref={setNodeRef}
@@ -137,22 +138,55 @@ export const KanbanBoard = ({ tasks, setTasks }: KanbanBoardProps) => {
     const activeId = active.id as string;
     const overId = over.id as string;
 
+    if (activeId === overId) return;
+
     setTasks((prev) => {
-      const activeTask = prev.find((t) => t.id === activeId);
+      const activeIndex = prev.findIndex((t) => t.id === activeId);
+      const activeTask = prev[activeIndex];
       if (!activeTask) return prev;
 
-      const overTask = prev.find((t) => t.id === overId);
+      const overIndex = prev.findIndex((t) => t.id === overId);
+      const overTask = prev[overIndex];
+
+      let targetStatus = activeTask.status;
+      if (overTask) {
+        targetStatus = overTask.status;
+      } else {
+        const statusMatch = columns.find(c => c.id === overId);
+        if (statusMatch) {
+          targetStatus = statusMatch.id;
+        } else {
+          return prev;
+        }
+      }
+
+      if (activeTask.status === targetStatus && overTask) {
+        return arrayMove(prev, activeIndex, overIndex);
+      }
+
+      const remainingTasks = [...prev];
+      remainingTasks.splice(activeIndex, 1);
+
+      const updatedTask = { ...activeTask, status: targetStatus };
 
       if (overTask) {
-        return prev.map((t) => (t.id === activeId ? { ...t, status: overTask.status } : t));
+        const newOverIndex = remainingTasks.findIndex(t => t.id === overId);
+        remainingTasks.splice(newOverIndex, 0, updatedTask);
+      } else {
+        let lastIndex = -1;
+        for (let i = 0; i < remainingTasks.length; i++) {
+          if (remainingTasks[i].status === targetStatus) {
+            lastIndex = i;
+          }
+        }
+        if (lastIndex === -1) {
+          remainingTasks.push(updatedTask);
+        } else {
+          remainingTasks.splice(lastIndex + 1, 0, updatedTask);
+        }
       }
 
-      const statusMatch = columns.find(c => c.id === overId);
-      if (statusMatch) {
-        return prev.map((t) => (t.id === activeId ? { ...t, status: statusMatch.id } : t));
-      }
-
-      return prev;
+      return remainingTasks;
     });
   };
 
@@ -182,7 +216,7 @@ export const KanbanBoard = ({ tasks, setTasks }: KanbanBoardProps) => {
         <div>
           <h2 className="text-3xl font-bold text-white mb-2">Gestión de Tareas</h2>
           <p className="text-slate-400">Organiza tu flujo de trabajo con el tablero Kanban.</p>
-        </div}
+        </div>
         <button
           onClick={() => setIsAdding(true)}
           className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20"
@@ -271,7 +305,7 @@ export const KanbanBoard = ({ tasks, setTasks }: KanbanBoardProps) => {
               label={label}
               tasks={tasks.filter(t => t.status === id)}
             >
-              <SortableContext items={tasks.filter((t) => t.status === id)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={tasks.filter((t) => t.status === id).map(t => t.id)} strategy={verticalListSortingStrategy}>
                 {tasks
                   .filter((t) => t.status === id)
                   .map((task) => (
